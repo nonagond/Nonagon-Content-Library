@@ -26,7 +26,11 @@ const MAX_CONSECUTIVE_BLOCKS = 3;
 // --------------
 
 function sanitizeFilename(name) {
-  return name.replace(/[\\/*?:"<>|]/g, "").trim();
+  return name
+    .replace(/[\\/*?:"<>|]/g, "")
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getPlaylistVideos(playlistUrl) {
@@ -203,10 +207,15 @@ async function main() {
       if (uploadDate === null) uploadDate = meta.uploadDate;
     }
 
+    // Fall back to today's date if upload date is unavailable
+    if (!uploadDate) {
+      const now = new Date();
+      uploadDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    }
+
     // Build filename
     const safeTitle = sanitizeFilename(title);
-    const dateSuffix = uploadDate ? ` ${uploadDate}` : "";
-    const filename = path.join(outputPath, `${safeTitle} [${videoId}]${dateSuffix}.txt`);
+    const filename = path.join(outputPath, `${safeTitle} [${videoId}] ${uploadDate}.txt`);
 
     // Try yt-dlp first, then API fallback
     let transcript = fetchTranscriptYtdlp(videoId);

@@ -945,3 +945,326 @@
 - Are you overwhelmed? Sick? Struggling with faith? Heart hardened by sin? Feeling God is distant?
 - "You have a Mother of Mercy. She's before Jesus and she says: 'My son, I ask for mercy.'"
 - "Place your life into the hands of Mary. She presents your cares before Jesus as though they are her own."
+
+---
+
+## Prompt Engineering is Dead
+**Channel:** Confluent / Agentic AI (developer-focused)
+**Published:** Unknown | **Duration:** ~17 min
+**URL:** https://www.youtube.com/watch?v=Cs7QiSi8KLY
+
+### The Core Problem: Context Windows Are Not Roomy
+- An LLM is a stateless box — tokens in, likely tokens out. It doesn't remember anything and only knows what it read during training
+- Even models with ~1 million token context windows feel cramped when you account for everything that must fit inside: system prompt, tool descriptions, resources, assistant messages, user messages, and tool call history
+- Optimal results come at roughly 60–70% of context window capacity — maxing it out actually degrades performance
+- The real problem: the LLM has no knowledge of your private business data and can't take actions on its own — agents solve this by making iterative LLM + tool calls
+
+### Six Components of a Context Window
+1. **User message** — the initial input/prompt
+2. **System prompt** — personality, guardrails, output instructions (always present, not repeated)
+3. **Tool descriptions** — what tools are available, their schemas (inputs/outputs)
+4. **Resources** — private enterprise data (docs, wikis, support tickets) that the LLM was never trained on
+5. **Assistant messages** — accumulated responses from the LLM across iterations
+6. **Tool calls & results** — intermediate tool invocations and their outputs during agent execution
+- Items 5 and 6 grow as execution unfolds, consuming more space over time
+
+### Four Tools for Engineering Context
+1. **System Prompt Engineering** — avoid being too vague ("do a good job") or too prescriptive (if-then logic). Define outcomes and broad approaches; let the LLM figure out the details
+2. **Tool Descriptions** — be specific and detailed, include full schemas (inputs and outputs) so the LLM knows when/how to call each tool
+3. **Intelligent Data Retrieval** — RAG (vector DB search) was the first approach but is imprecise. MCP (Model Context Protocol) offers queryable resources with descriptions; use prompting to let the model decide which resources to fetch rather than dumping everything in. Be economical — pass a user ID instead of a full record, let the model request details when needed
+4. **Long-Horizon Execution Strategies:**
+   - **Compaction** — use an LLM call to summarize large resources (e.g., 50K tokens → 500 words)
+   - **Memory** — a local key-value store to stash intermediate results and retrieve them later without bloating the context window
+   - **Agent Decomposition** — split monolithic agents into sub-agents (e.g., a dedicated document-search agent), each with its own focused context window
+
+### Key Takeaway
+- "Prompt engineering" is really **context engineering** — the art of curating what goes into the LLM's context window so agents can operate effectively
+- Context windows aren't getting much bigger, so we must be deliberate about what fills them
+
+---
+
+## 'Prompting' Just Split Into 4 Skills. You Only Know One.
+**Channel:** Nate Herk (AI strategy / prompting education)
+**Published:** Unknown | **Duration:** ~41 min
+**URL:** https://www.youtube.com/watch?v=BpibZSMGtdY
+
+### The Shift: Chat-Based Prompting Is Now Table Stakes
+- Opus 4.6, Gemini 3.1 Pro, and GPT 5.3 Codex all shipped autonomous agent capabilities in early 2026
+- Agents now run for hours, days, even weeks without checking in — everything you relied on in real-time conversation (catching mistakes, providing context, course-correcting) must be encoded **before** the agent starts
+- Same model, same Tuesday: Person A (2025 skills) gets 80% output and spends 40 min cleaning up. Person B (2026 skills) writes an 11-min structured spec, hands it off, gets coffee, comes back to a perfect result — then repeats 5x before lunch. **10x gap.**
+
+### Shopify CEO Toby Lütke on Context Engineering
+- Toby maintains a personal folder of prompts he runs against every new model release
+- His insight: the fundamental skill is "stating a problem with enough context that the task becomes plausibly solvable without additional information"
+- By being forced to provide AI with complete context, his human communication improved — emails tighter, memos better, decision frameworks stronger
+- Provocative thesis: "A lot of what people in big companies call politics is actually bad context engineering for humans" — sloppy communication that relies on shared context that doesn't actually exist
+
+### The Four Disciplines of Prompting (2026 Framework)
+
+#### Discipline 1: Prompt Craft (Individual, Synchronous)
+- The original skill: clear instructions, relevant examples, guardrails, explicit output format, ambiguity resolution
+- Still important but now **table stakes** — like knowing how to type was a differentiator in the 90s but assumed today
+- Was the whole game when AI interactions were synchronous; broke the moment agents started running for hours
+
+#### Discipline 2: Context Engineering (Information Environment)
+- Curating and maintaining the optimal set of tokens during an LLM task
+- Your 200-token prompt is 0.02% of what the model sees in a 1M context window — the other 99.98% is context engineering
+- Produces: CLAUDE.md files, agent specs, RAG pipeline design, memory architectures, MCP connections
+- People 10x more effective aren't writing 10x better prompts — they're building **10x better context infrastructure**
+
+#### Discipline 3: Intent Engineering (Organizational Purpose)
+- Encoding goals, values, trade-off hierarchies, and decision boundaries into infrastructure agents can act against
+- **Klarna case study**: AI agent resolved 2.3M customer conversations in month one but optimized for resolution time instead of customer satisfaction — led to rehiring human agents and lasting trust damage
+- Intent engineering sits above context engineering the way **strategy sits above tactics**
+- Stakes escalate: screwing up a prompt wastes your morning; screwing up intent engineering impacts your entire company
+
+#### Discipline 4: Specification Engineering (Organizational Knowledge)
+- Writing documents across your organization that autonomous agents can execute against over extended time horizons
+- Think of your **entire corporate document corpus** as agent-readable specifications: corporate strategy, product strategy, OKRs — all are specs
+- Anthropic's own Opus 4.5 team discovered the fix to agents running out of context wasn't a better model — it was spec engineering (structured plans, progress logs, incremental sessions)
+- **The smarter models get, the better your specs need to be**
+
+### Five Primitives to Learn
+1. **Self-Contained Problem Statements** — state a problem as if the recipient has never seen your dashboard, doesn't know your org context, has zero access beyond what you include
+2. **Acceptance Criteria** — write 3 sentences an independent observer could use to verify the output without asking you questions. If you can't, you don't understand the task well enough
+3. **Constraint Architecture** — define musts, must-nots, preferences, and escalation triggers. Best CLAUDE.md files are concise, high-signal constraint documents where every line earns its place
+4. **Decomposition** — break projects into subtasks under 2 hours each, with clear input/output boundaries, independently verifiable. Your job is increasingly to provide **break patterns** a planner agent can use
+5. **Evaluation Design** — build 3–5 test cases with known good outputs for every recurring AI task. Run them after model updates to catch regressions
+
+### Meta-Insight
+- These four disciplines are cumulative — skipping one creates structural failures
+- One-person businesses have the greatest advantage right now: convert Notion to agent-readable format and you're off to the races
+- The skill of providing high-quality input to intelligent systems turns out to be **transferable to humans too** — better specs = better human communication = better organizations
+
+---
+
+## Secure OpenClaw is Here: What It Can Actually Do
+**Channel:** First Movers / Julia McCoy
+**Published:** Unknown | **Duration:** ~13 min
+**URL:** https://www.youtube.com/watch?v=CFBZzLU3IQI
+
+### What Is Abacus AI Deep Agent?
+- Secure OpenClaw running in a SOC2-certified, fully observable, enterprise-grade environment
+- Connects to existing tools: GitHub, Jira, Slack, Gmail, Telegram — operates as an intelligent layer inside your stack
+- Every task runs in an isolated managed VM; every decision is logged with full visibility into what the agent does and why
+
+### Demo 1: Intelligent Telegram Life Coach Bot
+- From a single natural language instruction, Deep Agent built: Telegram connection via BotFather, webhook config, conversation flow, and a **persistent memory system** (remembers users across sessions, weeks of context)
+- Test: user asks "What did we decide about the job offer last Tuesday?" — bot recalls full context, pros/cons, and picks up mid-thought
+- When a user mentions worsening anxiety, the bot responds with empathy, validates, engages — then **autonomously recommends professional support** without being told to. Knows the edge of what it should handle alone
+
+### Demo 2: Autonomous Bug Fixing (Jira → PR)
+- Deep Agent is assigned a Jira ticket — reads for understanding (not keyword skimming), traces dependency chains, analyzes blast radius
+- Formulates a **reasoned plan specific to the codebase**, creates a branch (proper naming), implements fix, opens PR with detailed description, assigns reviewer based on file ownership history, posts Slack notification
+- Critically: flagged 2 tickets it **shouldn't resolve autonomously** — "Risk surface too high, recommend human review." An agent that knows its limits is worth 10 that don't
+
+### Demo 3: Automated PR Review (25 Repos)
+- Configured webhooks across 25 repos from a single instruction, 100% success rate, zero manual setup
+- For every new PR, reviewers get a Slack DM **before they've opened GitHub**: semantic analysis, file-by-file breakdown, potential bugs identified by understanding code intent (not linter flags), security vulnerabilities, performance implications, style recommendations
+- Difference between extraction and comprehension — "thinks like a senior engineer with full codebase context"
+
+### Demo 4: Slack Intelligence
+- Monitors mentions, reads surrounding 20 messages for full context, identifies the **real deliverable** (not what was literally asked), searches web for relevant data, synthesizes into a structured brief
+- One mention → a research task that would take 45 minutes delivered in under 2 minutes, ready to act on
+
+### Demo 5: Full Credit Card Application Portal
+- From a single prompt: built complete Next.js app (auth, card catalog, application forms, applicant dashboard), then autonomously created a separate AI decision engine, connected the two with bidirectional webhooks
+- Live flow: user submits → webhook → AI evaluates (salary, eligibility, risk) → simultaneous Slack notification, personalized email, and real-time dashboard update. Zero human involvement
+- Pricing: $10/month base tier, pro tier for full capability stack
+
+---
+
+## Anthropic AI Destroys $31 Billion of IBM Value — The AI Corporate Bloodbath Has Begun
+**Channel:** Tom Bilyeu Show (clip)
+**Published:** Unknown | **Duration:** ~9 min
+**URL:** https://www.youtube.com/watch?v=ZLEKvSb0DdA
+
+### The Catalyst: A Blog Post, Not a Product Launch
+- Anthropic published a blog post saying Claude Code can automate COBOL modernization exploration and analysis — IBM lost $31B in market cap in one day (stock down 13.2%, worst day since October 2000)
+- IBM down 27% in February alone, on track for worst month since 1968
+- Not an isolated hit: Accenture and Cognizant also dropped because they generate significant revenue from legacy system consulting
+
+### Why COBOL Matters
+- ~95% of US ATM transactions still run on COBOL (developed in 1959) — hundreds of billions of lines in production across banks, airlines, insurance, federal government
+- The pool of engineers who understand COBOL shrinks every year, making modernization harder and more expensive over time
+- IBM's moat was that COBOL was too complex, too old, and too expensive for anyone to want to touch — **incredibly profitable**
+- Anthropic claims: teams can now modernize COBOL codebases in **quarters instead of years** by automating dependency mapping, workflow documentation, execution path tracing, and risk identification
+
+### IBM's Defense vs. Reality
+- IBM CEO Arvind Krishna argues translating COBOL is only one step — you still need data layer migration, middleware replacement, integration re-engineering, and disaster recovery rebuilding
+- IBM just reported highest mainframe revenue in 20 years
+- **Counter-argument**: "However bad it looks today, it's only going to get better" for AI. Every time a CEO says "they still can't do X," the AI companies are taking notes and solving X next
+
+### The Broader Pattern ("Anthropic Releases → Market Crashes")
+- Anthropic is 4-for-4: every major software update triggers market crashes in affected sectors
+- Co-Work announcement → SaaS apocalypse (Teams down 35%, broad software selloff)
+- Vibe Working → IGF down 30%
+- Code Security → cybersecurity crash (Okta, CrowdStrike down ~8%)
+- COBOL tools → IBM bloodbath
+
+### Key Quote
+- "The rate of change is so fast. It is just blinding. Where we've gone from 3 years ago till now is startling. Where we go in 3 to 5 more years is utterly transformative."
+- Game plan: don't knock AI or waste time saying it can't do X. Build a timeline for when it becomes capable, migrate your skills so you're "the last person standing"
+
+---
+
+## I Replaced OpenClaw With Claude Code in One Day
+**Channel:** AI builder / developer tutorial
+**Published:** Unknown | **Duration:** ~15 min
+**URL:** https://www.youtube.com/watch?v=9Svv-n11Ysk
+
+### The Problem with OpenClaw
+- OpenClaw was the "4-minute mile" — proved a personal AI assistant at this magnitude was possible
+- But it was patching together different ways to recreate the existing Claude Code harness, requiring dual maintenance: desktop skills + separate OpenClaw brain
+- Every skill, schedule, and security audit had to be maintained in parallel — "a derivative of a derivative of a derivative"
+
+### The Solution: Bridge Claude Code to Telegram via Anthropic Agent SDK
+- Uses Anthropic's **native Agent SDK** to create a subprocess of Claude Code accessible from Telegram (or WhatsApp)
+- No third-party bridge needed — it's Anthropic's own SDK connecting directly to your existing Claude Code instance
+- Instant access to all 30+ global skills, MCP servers, CLAUDE.md files, web search, file system, and custom memory
+
+### Architecture (8 Stages)
+1. **Telegram** → 2. **Telegram API** (authentication) → 3. **Media Handler** (video, photo, voice notes) → 4. **Memory Injection** (recent memories from local SQLite) → 5. **Agent SDK** spawns a Claude subprocess → 6. Claude Code executes with full local infrastructure → 7. Converts response to text or voice → 8. Sends back to Telegram
+- End-to-end: one message → 8 stages in under 5 seconds
+
+### Three-Layer Memory System
+- **Layer 1: Session-based** — each conversation gets a session ID for persistent context within a conversation (leveraging Claude's 1M token context window)
+- **Layer 2: SQLite + Semantic/Episodic Memory** — local database with vector-based semantic memory and episodic memory with conversation decay (recent messages weighted higher)
+- **Layer 3: Context Injection** — before every message, searches recent memories, deduplicates noise, injects relevant context
+
+### The Mega Prompt & Setup Wizard
+- Provides a comprehensive "mega prompt" that explains the entire system and walks you through building it via interactive wizard
+- Setup includes: voice provider selection (Groq, OpenAI, 11 Labs), memory system type, feature toggles (video analysis, WhatsApp bridge, background services)
+- Built from scratch in ~1–2 hours; the prompt is designed so Claude Code can self-build its own version
+- Supports cron jobs/scheduling (like OpenClaw's proactiveness) via a Claude Code-created scheduler
+- **Key insight**: works with any CLI-based LLM — could swap in Codex, Gemini, etc.
+
+### Why This Is Better Than OpenClaw
+- One unified system: improve your desktop Claude Code → your Telegram assistant automatically improves
+- Uses your existing plan (no additional API costs if you don't want)
+- No third-party dependencies for the bridge layer
+- Computer must stay on (or use a Mac Mini as always-on server)
+
+---
+
+## Padre Pio Saw What Happens to a Soul Who Ends Their Own Life
+**Channel:** Catholic saints / faith channel
+**Published:** Unknown | **Duration:** ~12 min
+**URL:** https://www.youtube.com/watch?v=A-1naSi-ZxI
+
+### Padre Pio's Gift of Perceiving Souls
+- Padre Pio (Capuchin friar, southern Italy) was known for the stigmata he bore for 50 years, tireless confessional work, and miracles verified by skeptical doctors
+- He possessed a discreet and "terrifying" gift: the ability to perceive the state of souls, including those who had already died
+- Witnesses claimed souls in need of prayer would approach him seeking help
+- Two cases involving people who died by suicide are recorded in Bernard Ruffin's biography *Padre Pio: The True Story*, with testimony from Father Joseph Pius (longtime close collaborator)
+
+### Case 1: "There Is No Hope"
+- A widow approached Padre Pio in agony about her husband who had ended his own life
+- He initially said, "There is very little hope"
+- Then suddenly raised his gaze as if seeing something invisible, and his tone became firm: "No, there is no hope"
+- Interpreted not as a condemnation from Padre Pio himself, but as testimony that the final rejection of God is a "terrible and real" possibility
+
+### Case 2: "He Repented Between the Bridge and the River"
+- Another widow with the same question about her husband who died by suicide
+- Padre Pio paused, seemed to see something invisible, then answered with peace: **"He was saved. He repented between the bridge and the river."**
+- Affirms the Catholic teaching that between the human decision and the moment life leaves the body, there exists a **final instant** where grace can intervene and the heart can cry out to God
+
+### Catholic Church Teaching on Suicide
+- The Catechism states suicide is "seriously contrary to justice, hope, and charity"
+- But immediately adds: "Grave psychological disturbances, anguish, or grave fear of hardship, suffering, or torture can diminish the responsibility of the one committing suicide"
+- Most important statement: **"We should not despair of the eternal salvation of persons who have taken their own lives. God can provide the opportunity for a salutary repentance. The church prays for such persons."**
+
+### Additional Story: "Mama in Paradiso"
+- Father Dominic lost his mother and asked Padre Pio to offer Mass for her
+- After Mass, Padre Pio embraced him and whispered: **"Mama in Paradiso"** — not a pious guess but a certainty from what he had seen at the altar
+
+### Key Themes
+- Two men, two suicides, two radically different outcomes — the final judgment belongs to God alone
+- Modern psychology confirms: strong bonds and meaningful relationships protect against suicide (Durkheim, Viktor Frankl)
+- Suicide often reveals not a fully free rejection of life but a **collapse under unbearable psychological weight**
+- Padre Pio's constant request: pray for the departed. He believed prayer reaches beyond death and "purgatory should be emptied by prayer"
+- **"Even when someone falls from the bridge, grace may reach them before they reach the water"**
+
+---
+
+## Claude Code Just Became a Full IDE
+**Channel:** Agentic Labs (developer tutorials)
+**Published:** Unknown | **Duration:** ~17 min
+**URL:** https://www.youtube.com/watch?v=zrT5wPwwQ60
+
+### Claude Code Desktop App Overview
+- Claude Code now runs as a full desktop app on macOS and Windows — runs code, previews apps, manages terminals, all without VS Code, terminal windows, or extensions
+- Multiple agents and projects can run simultaneously in parallel sessions from the sidebar
+
+### Permission Modes
+- **Ask Permissions** — Claude asks before any change or command
+- **Auto Accept Edits** — Claude makes file changes freely but still asks for command execution
+- **Planning Mode** — agent won't make changes; use for discussing implementation plans
+- **Bypass Permissions** — equivalent to `--dangerously-skip-permissions`; Claude works without ever stopping to ask (must enable in Settings > Claude Code > "Allow bypass permissions mode")
+
+### Key Features
+- **Connectors** — integrate with Gmail, browser extension, and other external apps
+- **Plugins Marketplace** — easiest way to add agent skills and MCP servers; includes front-end design skill, "superpowers" (brainstorming, sub-agent development, TDD, systematic debugging)
+- **Worktrees** — Claude creates an isolated copy of the project, makes changes there, then merges back without affecting the main repo
+- **Live Preview Pane** — built-in browser shows the running web app; supports auto-verify (Claude takes screenshots and reviews the app in real-time after changes)
+- **Git Diffs** — expand any write entry to see exact code changes; can give feedback on specific lines via an inline orange button
+- **Run Locally, SSH, Remote, or Cloud** — local agents work on your codebase while cloud agents run in the background (keep running even if you close the app or shut down your PC)
+
+### Demo: Building "ThumbForge" (YouTube Thumbnail Generator)
+1. **Planning Phase** — used chat interface to brainstorm a PRD, then switched to Planning Mode to create implementation plan. Claude asked follow-up questions (e.g., which Gemini model?) — provided code snippets from AI Studio for accurate context
+2. **Build Phase** — switched to Bypass Permissions, Claude scaffolded a full Next.js app with Gemini 3 Pro image generation integration
+3. **Testing** — Claude used the preview window to fill in forms, navigate screens, generate a thumbnail. When a server error occurred, Claude read error logs from the terminal and **fixed the bug itself**
+4. **Parallel Agents** — kicked off a local agent to redesign UI (using front-end design plugin) while simultaneously running a cloud agent to adjust image resolution settings on the same repo
+5. **Cloud Agent PR Flow** — cloud agent completed work → created PR in GitHub → merged → archived session
+
+### Practical Tips
+- Rename sessions for organization
+- Open in VS Code / Cursor at any time to view files alongside Claude
+- Context is king: provide documentation, URLs, code snippets to improve agent output quality
+- When using auto-verify, Claude takes screenshots to visually validate the app
+
+---
+
+## AI's Massive Leap, Robotaxi Drama & The End of Legacy Tech
+**Channel:** Weekly AI Impact roundup (investing/tech)
+**Published:** Unknown | **Duration:** ~27 min
+**URL:** https://www.youtube.com/watch?v=aESiGgpGraE
+
+### Robotaxi Update
+- First cyber cab produced at Giga Austin via the unbox process; hundreds seen in the factory (no steering wheel, no pedals)
+- Fleet more than doubled since January 1st; 404 observed cars across Austin and Bay Area
+- **Wave** (UK company): raised $1.2B at $8.6B valuation, backed by Microsoft, Nvidia, Uber, Mercedes, Nissan, Stellantis — licensing FSD-like software to automakers. But requires roof-mounted sensor arrays, Level 2/3 maybe by 2028, 30% chance of Level 4 by 2030 — "by the time they might, Tesla will be everywhere"
+- Uber CEO Dara stumped when asked "What happens to 9 million Uber drivers?" — eventually answered "I don't know"
+
+### Humanoid Robots & Physical AI
+- 100+ humanoid robot companies in China; question is who scales manufacturing (hardware is hard, dexterity of hands is really hard)
+- Tesla Optimus Gen 3 unveil still scheduled for Q1 2026 (5 weeks away); Tesla winding down S/X and Fremont lines to become a million+ Optimus/year factory
+- Jensen Huang confirms **physical AI** is the next inflection point beyond Agentic AI; CFO says it already contributed $6B to 2026 Nvidia revenue
+- Google folded its Intrinsic robotics lab into DeepMind — think of it as "Android for physical AI"
+- Japan deployed an AI-powered Buddhist robot trained on centuries of Buddhist scripture
+
+### Nvidia Earnings & Compute Demand
+- **$68.1B in a single quarter** — more in 90 days than the entire company made two years ago
+- Rubin (next-gen chip) shipping in a quarter: 10x more efficient, 4x fewer GPUs to train same models — "step change in efficiency"
+- Logan (Nvidia): "The compute bottleneck is massively underappreciated. The gap between supply and demand is growing by single-digit percentages every day"
+- AMD + Meta partnership: $600–700B over multiple years
+
+### AI Eating Legacy Business
+- IBM lost $40B market cap in a day because Anthropic posted they can read/debug COBOL code
+- Pattern repeating: Co-Work → SaaS apocalypse, Vibe Working → IGF down 30%, Code Security → cybersecurity crash, COBOL tools → IBM bloodbath
+- Private equity firm meeting: "We don't need associates anymore" — a typical PE associate ($200K/year) builds Excel models, turns them into PowerPoints, emails them. Claude does it for $20/month
+- **Pulsia**: runs a complete enterprise company for $180/day (3,000 emails/day, designs, operations, employee onboarding)
+
+### Supercomputing & Defense
+- xAI's Colossus 2: 555,000 GPUs, 2 GW power — largest AI supercluster on the planet (6x Google's power usage)
+- **Fury**: first privately-built AI-powered unmanned fighter jet (supersonic, autonomous threat detection/engagement)
+- **Saronic**: $1.5B raise at $9B valuation — AI-powered military drone ships (can travel 1,000 miles at 35 knots)
+- SpaceX gets FAA approval for ramp toward 1M+ orbital launches for space data centers
+
+### Key Macro Signals
+- GDP growing without jobs — AI-driven productivity gains likely the explanation
+- If AI is deflationary: productivity up → GDP up → inflation down → rate cuts → market booms
+- AI war game simulation (OpenAI, Google, Anthropic): **95% of results led to global thermonuclear war** — Pentagon pressuring Claude for safety limits
+- Dario Amodei (Anthropic CEO): "The public is not aware of what's about to happen... it's as if this tsunami is coming and it's so close we can see it on the horizon"
+- Karpathy: "It's hard to communicate how much programming has changed just in the last 2 months"
+- Intelligence going through the roof, cost of intelligence going to zero — "be prepared for that"
